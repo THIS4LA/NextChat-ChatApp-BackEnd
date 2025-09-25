@@ -10,9 +10,9 @@ import socketHandler from "./socket/socket.js";
 //https://admin.socket.io/#/
 import { instrument } from "@socket.io/admin-ui";
 
-import authRoutes from "./routes/authRoutes.js";
-import conversationRoutes from "./routes/conversationRoutes.js";
-import messageRoutes from "./routes/messageRoutes.js";
+import authRouter from "./routes/authRoutes.js";
+import conversationRouter from "./routes/conversationRoutes.js";
+import messageRouter from "./routes/messageRoutes.js";
 
 dotenv.config();
 
@@ -32,18 +32,22 @@ io.on("connection", (socket) => {
   socket.emit("message", "Hello from server!");
 });
 
-
 app.use(cors());
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
+
   const token = req.header("Authorization")?.replace("Bearer ", "");
 
   if (token != null) {
     jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
       if (decoded != null) {
-        req.body.user = decoded;
+        console.log("Decoded JWT:", decoded);
+        req.user = decoded;
         next();
+      }
+      else {
+        console.error("JWT Verification Error:", err);
       }
     });
   } else {
@@ -51,9 +55,9 @@ app.use((req, res, next) => {
   }
 });
 
-app.use("/api/auth", authRoutes);
-app.use("/api/conversations", conversationRoutes);
-app.use("/api/messages", messageRoutes);
+app.use("/api/auth", authRouter);
+app.use("/api/conversations", conversationRouter);
+app.use("/api/messages", messageRouter);
 
 mongoose
   .connect(process.env.MONGO_URL)
