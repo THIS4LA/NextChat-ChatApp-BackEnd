@@ -14,8 +14,25 @@ export const getUserConversations = async (req, res) => {
   try {
     const conversations = await Conversation.find({
       members: req.user.id,
-    }).populate("members", "username email");
-    res.json(conversations);
+    })
+      .populate("members", "userName avatar email")
+      .sort({ updatedAt: -1 });
+
+    const formattedConversations = conversations.map((item) => {
+      const otherUser = item.members.find(
+        (m) => m._id.toString() !== req.user.id
+      );
+
+      return {
+        _id: otherUser ? otherUser._id : item._id,
+        isGroup: item.isGroup,
+        name: item.isGroup ? item.name : otherUser?.userName,
+        avatar: item.isGroup ? null : otherUser?.avatar,
+        lastMessage: item.lastMessage,
+      };
+    });
+
+    res.json(formattedConversations);
   } catch (err) {
     res.status(500).json({ error: err.message });
   }
