@@ -13,6 +13,7 @@ import { instrument } from "@socket.io/admin-ui";
 import authRouter from "./routes/authRoutes.js";
 import conversationRouter from "./routes/conversationRoutes.js";
 import messageRouter from "./routes/messageRoutes.js";
+import userRouter from "./routes/userRoutes.js";
 
 dotenv.config();
 
@@ -20,8 +21,8 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "*", // allow frontend
-    methods: ["GET", "POST"],
+    origin: ["http://localhost:3000", "https://admin.socket.io"],
+    credentials: true,
   },
 });
 
@@ -36,28 +37,32 @@ app.use(cors());
 app.use(bodyParser.json());
 
 app.use((req, res, next) => {
-
-  const token = req.header("Authorization")?.replace("Bearer ", "");
-
-  if (token != null) {
-    jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
-      if (decoded != null) {
-        console.log("Decoded JWT:", decoded);
-        req.user = decoded;
-        next();
-      }
-      else {
-        console.error("JWT Verification Error:", err);
-      }
-    });
-  } else {
-    next();
+  if (req.path.startsWith("/api/auth")) {
+    return next();
   }
+
+  const authHeader = req.header("Authorization");
+  if (!authHeader) {
+    return res.status(401).json({ error: "Authorization header missing" });
+  }
+
+  const token = authHeader.replace("Bearer ", "");
+
+  jwt.verify(token, process.env.JWT_SECRET, (err, decoded) => {
+    if (err) {
+      console.error("JWT Verification Error:", err.message);
+      return res.status(401).json({ error: "Invalid or malformed token" });
+    }
+
+    req.user = decoded;
+    next();
+  });
 });
 
 app.use("/api/auth", authRouter);
 app.use("/api/conversations", conversationRouter);
 app.use("/api/messages", messageRouter);
+app.use("/api/users", userRouter);
 
 mongoose
   .connect(process.env.MONGO_URL)
@@ -69,13 +74,13 @@ mongoose
   });
 
 // ✅ Socket.IO Events
-// socketHandler(io);
-
-const PORT = process.env.PORT || 5000;
-server.listen(PORT, () => {
-  console.log(`🚀 Server running on port ${PORT}`);
-});
+socketHandler(io);
 
 instrument(io, {
   auth: false,
+});
+
+const PORT = process.env.PORT;
+server.listen(PORT, () => {
+  console.log(`🚀 Server running on port ${PORT}`);
 });
