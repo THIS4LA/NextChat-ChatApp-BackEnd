@@ -4,6 +4,6 @@ import { sendMessage, getMessages } from "../controllers/messageController.js";
 const messageRouter = express.Router();
 
 messageRouter.post("/", sendMessage);
-messageRouter.get("/:conversationId", getMessages);
+messageRouter.get("/:id", getMessages);
 
 export default messageRouter;
