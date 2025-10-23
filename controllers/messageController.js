@@ -98,8 +98,8 @@ export const getMessages = async (req, res) => {
         updatedAt: msg.updatedAt,
         sender: isMe ? "me" : "other",
         otherUser: !isMe
-          ? { username: msg.sender.userName, avatar: msg.sender.avatar }
-          : { username: otherUser?.userName, avatar: otherUser?.avatar },
+          ? { username: otherUser?.userName, avatar: otherUser?.avatar }
+          : { username: msg.sender.userName, avatar: msg.sender.avatar },
         seenBy: msg.seenBy,
       };
     });
