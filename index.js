@@ -7,7 +7,7 @@ import http from "http";
 import jwt from "jsonwebtoken";
 import { Server } from "socket.io";
 import socketHandler from "./socket/socket.js";
-//https://admin.socket.io/#/
+//https://admin.socket.io/#/(Chrome)
 import { instrument } from "@socket.io/admin-ui";
 
 import authRouter from "./routes/authRoutes.js";
@@ -24,13 +24,6 @@ const io = new Server(server, {
     origin: ["http://localhost:3000", "https://admin.socket.io"],
     credentials: true,
   },
-});
-
-io.on("connection", (socket) => {
-  console.log("✅ A user connected:", socket.id);
-
-  // send a test message to client
-  socket.emit("message", "Hello from server!");
 });
 
 app.use(cors());
