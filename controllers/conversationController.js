@@ -24,7 +24,8 @@ export const getUserConversations = async (req, res) => {
       );
 
       return {
-        _id: otherUser ? otherUser._id : item._id,
+        _id: item._id,
+        otherUserId: otherUser ? otherUser._id : item._id,
         isGroup: item.isGroup,
         name: item.isGroup ? item.name : otherUser?.userName,
         avatar: item.isGroup ? null : otherUser?.avatar,
