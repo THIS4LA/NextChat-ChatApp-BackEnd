@@ -19,7 +19,7 @@ export async function getAvailableUsers(req, res) {
 export async function updateUser(req, res) {
   try {
     const userId = req.params.id;
-    const { userName, email } = req.body;
+    const { userName, email, avatar } = req.body;
 
     const users = await User.findByIdAndUpdate(
       {
@@ -28,11 +28,25 @@ export async function updateUser(req, res) {
       {
         userName,
         email,
+        avatar,
       },
       { new: true }
     );
 
     res.status(200).json(users);
+  } catch (error) {
+    res.status(500).json({ message: error.message });
+  }
+}
+
+export async function getUserById(req, res) {
+  try {
+    const userId = req.params.id;
+    const user = await User.findById(userId);
+    if (!user) {
+      return res.status(404).json({ message: "User not found" });
+    }
+    res.status(200).json(user);
   } catch (error) {
     res.status(500).json({ message: error.message });
   }
