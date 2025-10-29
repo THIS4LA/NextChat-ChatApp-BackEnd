@@ -1,26 +1,26 @@
 export default function socketHandler(io) {
-  // 🟢 Global store for all connected users
+  // Global store for all connected users
   const onlineUsers = new Map(); // { userId: socketId }
 
   io.on("connection", (socket) => {
-
-    // When user connects
+    // --- USER CONNECTED ---
     socket.on("userConnected", (userId) => {
+      if (onlineUsers.has(userId)) return;
+
       onlineUsers.set(userId, socket.id);
 
-      // Notify everyone
-      io.emit("updateOnlineUsers", Array.from(onlineUsers.keys()));
-
-      // Send current list to this new user too
-      socket.emit("updateOnlineUsers", Array.from(onlineUsers.keys()));
+      const allOnline = Array.from(onlineUsers.keys());
+      io.emit("updateOnlineUsers", allOnline);
+      socket.emit("updateOnlineUsers", allOnline);
     });
 
-    // Join a conversation room
+    // --- JOIN CONVERSATION ---
     socket.on("joinConversation", (conversationId) => {
+      if (socket.rooms.has(conversationId)) return;
       socket.join(conversationId);
     });
 
-    // Typing events
+    // --- TYPING EVENTS ---
     socket.on("typing", ({ conversationId, user }) => {
       socket.to(conversationId).emit("userTyping", user);
     });
@@ -29,24 +29,27 @@ export default function socketHandler(io) {
       socket.to(conversationId).emit("userStoppedTyping", user);
     });
 
-    // Handle sending a message
+    // --- SEND MESSAGE ---
     socket.on("sendMessage", (messageData) => {
       const receivedMessageData = {
         _id: Date.now(),
         text: messageData.text,
         createdAt: messageData.createdAt,
         sender: "other",
+        senderId: messageData.sender._id,
+        conversationId: messageData.conversationId,
         otherUser: {
           username: messageData.sender.userName,
           avatar: messageData.sender.avatar,
         },
       };
+
       socket
         .to(messageData.conversationId)
         .emit("newMessage", receivedMessageData);
     });
 
-    // When user disconnects
+    // --- DISCONNECT ---
     socket.on("disconnect", () => {
       for (const [userId, sId] of onlineUsers.entries()) {
         if (sId === socket.id) {
@@ -54,6 +57,7 @@ export default function socketHandler(io) {
           break;
         }
       }
+
       io.emit("updateOnlineUsers", Array.from(onlineUsers.keys()));
     });
   });
