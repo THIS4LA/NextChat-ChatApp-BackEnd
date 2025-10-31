@@ -14,6 +14,16 @@ export default function socketHandler(io) {
       socket.emit("updateOnlineUsers", allOnline);
     });
 
+        // --- USER LOGOUT ---
+    socket.on("userLogout", (userId) => {
+      if (onlineUsers.has(userId)) {
+        onlineUsers.delete(userId);
+        io.emit("updateOnlineUsers", Array.from(onlineUsers.keys()));
+      }
+      // optionally force disconnect this socket
+      socket.disconnect(true);
+    });
+
     // --- JOIN CONVERSATION ---
     socket.on("joinConversation", (conversationId) => {
       if (socket.rooms.has(conversationId)) return;
