@@ -29,5 +29,5 @@ jobs:
           context: ./
           push: true
           tags: |
-            thisalkarunarathna/nextchat-chatapp-backend:${{ env.SHORT_SHA }}
-            thisalkarunarathna/nextchat-chatapp-backend:latest
+            ${{ secrets.DOCKERHUB_USERNAME }}/nextchat-chatapp-backend:${{ env.SHORT_SHA }}
+            ${{ secrets.DOCKERHUB_USERNAME }}/nextchat-chatapp-backend:latest
