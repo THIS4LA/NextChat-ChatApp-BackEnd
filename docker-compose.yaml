@@ -1,0 +1,14 @@
+services:
+  backend:
+    build: .
+    container_name: backend-container
+    image: backend:v1
+    ports:
+      - "8080:8080"
+    env_file: .env
+    volumes:
+      #creating an anonymous volume to keep container node_modules separate from host
+      - /app/node_modules
+      #mounting current directory to /app in container
+      - .:/app
+    command: npm run dev
