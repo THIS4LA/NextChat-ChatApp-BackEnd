@@ -93,6 +93,7 @@ npm install
 MONGO_URL=<your_mongodb_connection_string>
 PORT=8080
 JWT_SECRET=<your_jwt_secret_key>
+FRONTEND_URL=<your_frontend_url>
 ```
 
 4️⃣ Run the Server
